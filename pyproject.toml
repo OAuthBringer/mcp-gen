@@ -5,7 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcp-gen"
 version = "0.1.0"
-description = "YAML-based MCP configuration generator with template interpolation and secret management"
+description = "YAML-based Model Context Protocol MCP configuration generator with template interpolation and secret management"
+authors = [
+    {name = "Jon Staples"},
+]
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [

@@ -18,10 +18,10 @@ def main():
 @main.command()
 @click.option('--config', '-c', type=click.Path(exists=True), 
               default='mcp.config.yaml', help='Config YAML file')
-@click.option('--secrets', '-s', type=click.Path(exists=True),
-              default='mcp.secrets.yaml', help='Secrets YAML file')
+@click.option('--secrets', '-s', type=click.Path(),
+              default=None, help='Secrets YAML file (optional)')
 @click.option('--output', '-o', type=click.Path(),
-              default='.amazonq/mcp.json', help='Output JSON file')
+              default=None, help='Output JSON file (overrides config outputs)')
 @click.option('--validate/--no-validate', default=True,
               help='Validate output against MCP schema')
 def generate(config, secrets, output, validate):
@@ -36,14 +36,26 @@ def generate(config, secrets, output, validate):
     if validate:
         validator.validate_output(result)
     
-    # Write output
-    output_path = Path(output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Determine output paths
+    if output:
+        # Use CLI-specified output
+        output_paths = [output]
+    else:
+        # Use config-specified outputs
+        output_paths = engine.get_outputs()
+        if not output_paths:
+            # Default fallback
+            output_paths = ['.amazonq/mcp.json']
     
-    with output_path.open('w') as f:
-        json.dump(result, f, indent=2)
-    
-    click.echo(f"Generated MCP configuration: {output}")
+    # Write to all specified outputs
+    for output_path in output_paths:
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with path.open('w') as f:
+            json.dump(result, f, indent=2)
+        
+        click.echo(f"Generated MCP configuration: {output_path}")
 
 
 @main.command()

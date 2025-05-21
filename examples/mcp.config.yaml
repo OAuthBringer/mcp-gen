@@ -1,0 +1,27 @@
+version: "1.0"
+metadata:
+  name: "Multi MCP output confiugration"
+  description: "Functional demo configuration"
+
+variables:
+  project_root: "/Users/oauthbringer/dev/mcp-gen"
+  data_path: "{{ variables.project_root }}/data"
+
+outputs:
+  - "{{ variables.project_root }}/.amazonq/mcp.json"
+  - "{{ variables.project_root }}/claude-desktop/mcp.json"
+
+servers:
+  filesystem:
+    command: "npx"
+    args: 
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "{{ variables.project_root }}"
+  
+  demo_server:
+    command: "echo"
+    args: ["Token: {{ secrets.DEMO_TOKEN }}"]
+    env:
+      PROJECT_PATH: "{{ variables.project_root }}"
+      DEBUG: "{{ env.DEBUG | default('false') }}"

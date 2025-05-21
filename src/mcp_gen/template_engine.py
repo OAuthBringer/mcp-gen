@@ -11,6 +11,7 @@ class TemplateEngine:
     
     def __init__(self):
         self.env = Environment(loader=BaseLoader())
+        self.outputs = []
     
     def process_config(self, config_path, secrets_path=None):
         """Process configuration with optional secrets."""
@@ -24,8 +25,9 @@ class TemplateEngine:
             with open(secrets_path) as f:
                 secrets = yaml.safe_load(f) or {}
         
-        # Extract variables from config
+        # Extract variables and raw outputs from config
         variables = config.get('variables', {})
+        raw_outputs = config.get('outputs', [])
         
         # Build template context
         context = {
@@ -33,6 +35,9 @@ class TemplateEngine:
             'secrets': secrets.get('secrets', {}),
             'env': dict(__import__('os').environ)
         }
+        
+        # Process outputs with template interpolation
+        self.outputs = [self._interpolate_string(output, context) for output in raw_outputs]
         
         # Process servers section
         if 'servers' not in config:
@@ -45,6 +50,10 @@ class TemplateEngine:
         return {
             'mcpServers': processed_servers
         }
+    
+    def get_outputs(self):
+        """Get configured output paths."""
+        return self.outputs
     
     def _process_server(self, server_config, context):
         """Process individual server configuration."""
